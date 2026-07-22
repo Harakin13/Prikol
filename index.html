@@ -143,7 +143,15 @@
             margin-top: 6px;
         }
 
-        /* Instruction Button сверху цветочка */
+        /* Кнопки-ссылки сверху цветочка (инструкция + квест) */
+        .header-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
         .btn-instruction {
             display: inline-block;
             background: rgba(244, 114, 182, 0.15);
@@ -154,7 +162,6 @@
             font-size: 0.8rem;
             font-weight: 600;
             text-decoration: none;
-            margin-bottom: 12px;
             transition: all 0.2s;
         }
 
@@ -162,6 +169,25 @@
             background: var(--accent2);
             color: var(--bg);
             box-shadow: 0 0 12px var(--accent2);
+        }
+
+        .btn-quest {
+            display: inline-block;
+            background: rgba(217, 70, 239, 0.15);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-quest:hover {
+            background: var(--accent);
+            color: var(--bg);
+            box-shadow: 0 0 12px var(--accent);
         }
 
         /* ── Card ── */
@@ -519,8 +545,11 @@
 
         <!-- Header -->
         <div class="header">
-            <!-- Ссылка-инструкция сверху цветочка -->
-            <a href="https://harakin13.github.io/Instruction/" target="_blank" class="btn-instruction">📖 Инструкция по обходу</a>
+            <!-- Ссылки-кнопки сверху цветочка -->
+            <div class="header-links">
+                <a href="https://harakin13.github.io/Instruction/" target="_blank" class="btn-instruction">📖 Инструкция по обходу</a>
+                <a href="https://harakin13.github.io/Dayliiky-1/index.html" target="_blank" class="btn-quest">🍑 Твой квест ждёт</a>
+            </div>
             <div class="icon">🌸</div>
             <h1>Только для тебя</h1>
             <p>Это наш маленький секрет <br> Никто, кроме нас, не увидит ❤️</p>
