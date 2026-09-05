@@ -288,25 +288,45 @@
             box-shadow: 0 0 12px #f43f5e;
         }
 
-        /* Новая кнопка «Сообщение-1» */
-        .btn-message1 {
-            display: inline-block;
-            background: rgba(99, 102, 241, 0.15); /* Космический индиго */
-            border: 1px solid #6366f1;
-            color: #6366f1;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
+/* Стили для первой кнопки (остаются как были) */
+.btn-message1 {
+    display: inline-block;
+    background: rgba(99, 102, 241, 0.15); /* Космический индиго */
+    border: 1px solid #6366f1;
+    color: #6366f1;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
 
-        .btn-message1:hover {
-            background: #6366f1;
-            color: var(--bg);
-            box-shadow: 0 0 12px #6366f1;
-        }
+.btn-message1:hover {
+    background: #6366f1;
+    color: var(--bg);
+    box-shadow: 0 0 12px #6366f1;
+}
+
+/* Новые стили для второй кнопки */
+.btn-message2 {
+    display: inline-block;
+    background: rgba(244, 63, 94, 0.15); /* Рубиновый / Огненный */
+    border: 1px solid #f43f5e;
+    color: #f43f5e;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-message2:hover {
+    background: #f43f5e;
+    color: var(--bg); /* Убедись, что переменная --bg у тебя задана, или поменяй на #fff / #000 */
+    box-shadow: 0 0 12px #f43f5e;
+}
 
         /* ── Card ── */
         .card {
@@ -673,6 +693,7 @@
             <a href="https://harakin13.github.io/Propal3/" target="_blank" class="btn-missing-3">🚀 Куда я пропал? 3.0</a>
             <a href="https://harakin13.github.io/MoonStrick/" target="_blank" class="btn-monster">👾 Создай монстрика</a>
             <a href="https://harakin13.github.io/Message1/" target="_blank" class="btn-message1">🌌 Сообщение-1</a>
+            <a href="https://harakin13.github.io/Message2/" target="_blank" class="btn-message2">🐉 Сообщение-2</a>
         </div>
             <div class="icon">🌸</div>
             <h1>Только для тебя</h1>
